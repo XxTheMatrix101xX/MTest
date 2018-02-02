@@ -50,6 +50,8 @@ if [ -d $bk_dir ]
 			xdotool type ${KOREPw}
 			xdotool key Return
 			sleep 2
+			xdotool windowsize $(xdotool getactivewindow) 50% 50%
+			sleep 1
 			xdotool windowminimize $(xdotool getactivewindow)
 			sleep ${uptime}
 			killall kore-qt 2>&1 >/dev/null
