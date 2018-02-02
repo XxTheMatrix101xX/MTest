@@ -1,16 +1,70 @@
-echo please enter your password:
-read -s pw
-sleep 3
-xdotool search --name "kore - wallet" windowactivate
-sleep 2
-xdotool windowmove $(xdotool getactivewindow) 0 0
-sleep 1
-xdotool windowsize $(xdotool getactivewindow) 100% 100%
-xdotool mousemove 83 42 click 1 &
-sleep 2
-xdotool mousemove 87 111 click 1 &
-sleep 3
-xdotool type $pw
-xdotool key Return
-sleep 1
-xdotool windowminimize $(xdotool getactivewindow)
+#!/bin/bash
+#backup Directory
+bk_dir=~/Desktop/KORE_BK/
+#KORE active Directory
+kore_dir=~/.kore/
+#Time before wallet restarts
+uptime=3h
+#Time to wait before unlocking wallet after restart
+init_wait=15m
+link="https://bitcointalk.org/index.php?topic=2096416.msg29423116#msg29423116" #link to btctalk release/post
+clear
+echo "  _  __   ___    ____    _____   _       _   _   "
+echo " | |/ /  / _ \  |  _ \  | ____| | |__   (_) | |_ "
+echo " | ' /  | | | | | |_) | |  _|   | '_ \  | | | __|"
+echo " | . \  | |_| | |  _ <  | |___  | |_) | | | | |_ "
+echo " |_|\_\  \___/  |_| \_\ |_____| |_.__/  |_|  \__|"
+echo "                                                 "
+echo ""
+echo "Please have a LOCKED KORE wallet running when you start this script!!!!"
+echo ""
+echo ""
+echo ""
+echo "Temporary Cycling script by TheMatrix101"
+echo ""
+if command -v xdotool >/dev/null 2>&1
+	then
+		>/dev/null 2>&1
+	else
+		echo You have not correctly configured your system, please follow the instructions here ${link} and run the script after you complete setup.
+		echo ""
+		echo "Error code 1: xdotool not installed!, please install xdotool to continue."
+		echo 'To fix please enter "sudo apt-get install xdotool -y" (without quotation marks)'
+		exit
+fi
+if [ -d $bk_dir ]
+	then
+		echo "Please enter the password to unlock your wallet for staking, If you input the incorrect password please CTRL+C and restart this script"
+		echo "NOTE: for security reasons you will not be able to see the password as you put it in (this stops others from looking over your shoulder at it)"
+		read -s KOREPw
+		while true
+		do
+			xdotool  search --name "kore - wallet" windowactivate
+			sleep 2
+			xdotool windowmove $(xdotool getactivewindow) 0 0
+			xdotool windowsize $(xdotool getactivewindow) 100% 100%
+			xdotool mousemove 83 42 click 1 &
+			sleep 2
+			xdotool mousemove 87 111 click 1 &
+			sleep 1
+			xdotool type ${KOREPw}
+			xdotool key Return
+			sleep 2
+			xdotool windowminimize $(xdotool getactivewindow)
+			sleep ${uptime}
+			killall kore-qt 2>&1 >/dev/null
+			sleep 10
+			#clear all inside KORE Folder $kore_dir
+			rm -rf ${kore_dir}
+			#port over good backup
+			cp -r ${bk_dir}. ${kore_dir}
+			#start KORE again
+			gnome-terminal -e './pt2.sh'
+			#set sleep to 30 min on production
+			sleep ${init_wait}
+		done
+	else
+		echo You have not correctly configured your system, please follow the instructions here ${link} and run the script after you complete setup.
+		echo Error code 2: ${bk_dir} not configured
+		exit
+fi
