@@ -1,0 +1,16 @@
+echo please enter your password:
+read -s pw
+sleep 3
+xdotool search --name "kore - wallet" windowactivate
+sleep 2
+xdotool windowmove $(xdotool getactivewindow) 0 0
+sleep 1
+xdotool windowsize $(xdotool getactivewindow) 100% 100%
+xdotool mousemove 83 42 click 1 &
+sleep 2
+xdotool mousemove 87 111 click 1 &
+sleep 3
+xdotool type $pw
+xdotool key Return
+sleep 1
+xdotool windowminimize $(xdotool getactivewindow)
