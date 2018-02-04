@@ -4,10 +4,14 @@ bk_dir=~/Desktop/KORE_BK/
 #KORE active Directory
 kore_dir=~/.kore/
 #Time before wallet restarts
-uptime=3h
+uptime=1m #3h
 #Time to wait before unlocking wallet after restart
-init_wait=15m
+init_wait=1m #15m
+x=0
 link="https://bitcointalk.org/index.php?topic=2096416.msg29423116#msg29423116" #link to btctalk release/post
+
+splash()
+{
 clear
 echo "  _  __   ___    ____    _____   _       _   _   "
 echo " | |/ /  / _ \  |  _ \  | ____| | |__   (_) | |_ "
@@ -22,51 +26,132 @@ echo ""
 echo ""
 echo "Temporary Cycling script by TheMatrix101"
 echo ""
-if command -v xdotool >/dev/null 2>&1
-	then
+checks
+}
+
+checks()
+{
+
+if command -v xdotool >/dev/null 2>&1 && [ -d $bk_dir ]; then
 		>/dev/null 2>&1
+	elif command -v xdotool >/dev/null 2>&1; then
+		echo $bk_dir has not been made
+		exit
 	else
 		echo You have not correctly configured your system, please follow the instructions here ${link} and run the script after you complete setup.
-		echo ""
-		echo "Error code 1: xdotool not installed!, please install xdotool to continue."
-		echo 'To fix please enter "sudo apt-get install xdotool -y" (without quotation marks)'
+                echo ""
+                echo "Error code 1: xdotool not installed!, please install xdotool to continue."
+                echo 'To fix please enter "sudo apt-get install xdotool -y" (without quotation marks)'
 		exit
 fi
-if [ -d $bk_dir ]
-	then
-		echo "Please enter the password to unlock your wallet for staking, If you input the incorrect password please CTRL+C and restart this script"
-		echo "NOTE: for security reasons you will not be able to see the password as you put it in (this stops others from looking over your shoulder at it)"
-		read -s KOREPw
-		while true
-		do
+
+pp
+}
+
+pp()
+{
+echo "Please enter the password to unlock your wallet for staking, If you input the incorrect password you will have the chance to update it"
+echo "NOTE: for security reasons you will not be able to see the password as you put it in (this stops others from looking over your shoulder at it)"
+read -s KOREPw
+echo ""
+echo ""
+confpp
+}
+
+confpp()
+{
+read -p "Please confirm your password is ${#KOREPw} characters in length (Y/N)" chars
+case ${chars:0:1} in
+	y|Y )
+		echo Script has initiated, please leave this window open so the script can run.
+		main
+	;;
+	n|N )
+		pp
+	;;
+	* )
+		echo "Not a valid choice, please use the y (yes) or n (no)"
+		confpp
+	;;
+esac
+}
+#open wallet
+#max wallet
+#go to coords
+
+main()
+{
+xdotool search --name "kore - wallet" windowactivate
+sleep 2
+xdotool windowmove $(xdotool getactivewindow) 0 0
+xdotool windowsize $(xdotool getactivewindow) 100% 100%
+sleep 3
+xdotool mousemove 83 42 click 1 &
+sleep 3
+xdotool mousemove 87 111 click 1 &
+sleep 4
+while true
+do
+        if [ "$(xdotool getactivewindow getwindowname)" != "Unlock wallet" ] && [ $x -le 10 ]; then
+                        sleep 1
+                        echo attempt $x
+                        xdotool search --name "Unlock wallet" windowactivate
+                        x=$(( $x + 1 ))
+                elif [ $x -ge 10 ]; then
+                        x=0
 			xdotool  search --name "kore - wallet" windowactivate
 			sleep 2
 			xdotool windowmove $(xdotool getactivewindow) 0 0
-			xdotool windowsize $(xdotool getactivewindow) 100% 100%
-			xdotool mousemove 83 42 click 1 &
 			sleep 2
-			xdotool mousemove 87 111 click 1 &
-			sleep 1
+			xdotool mousemove 470 226 click 1 &
+			sleep 2
+                        main
+		elif [ "$(xdotool getactivewindow getwindowname)" == "Unlock wallet" ]; then
 			xdotool type ${KOREPw}
-			xdotool key Return
-			sleep 2
-			xdotool windowsize $(xdotool getactivewindow) 50% 50%
-			sleep 1
-			xdotool windowminimize $(xdotool getactivewindow)
-			sleep ${uptime}
-			killall kore-qt 2>&1 >/dev/null
-			sleep 10
-			#clear all inside KORE Folder $kore_dir
-			rm -rf ${kore_dir}
-			#port over good backup
-			cp -r ${bk_dir}. ${kore_dir}
-			#start KORE again
-			gnome-terminal -e './pt2.sh'
-			#set sleep to 30 min on production
-			sleep ${init_wait}
-		done
-	else
-		echo You have not correctly configured your system, please follow the instructions here ${link} and run the script after you complete setup.
-		echo Error code 2: ${bk_dir} not configured
-		exit
-fi
+			sleep 5
+			if [ "$(xdotool getactivewindow getwindowname)" == "Unlock wallet" ]; then
+				xdotool key Return
+			else
+				xdotool search --name "Unlock wallet" windowactivate
+				sleep 2
+				if [ "$(xdotool getactivewindow getwindowname)" == "Unlock wallet" ]; then
+					sleep 2
+		                        xdotool windowmove $(xdotool getactivewindow) 0 0
+                		        sleep 2
+		                        xdotool mousemove 470 226 click 1 &
+                		        sleep 2
+		                        main
+				else
+					main
+				fi
+			fi
+                else
+                        break
+        fi
+kk
+done
+}
+
+sk() #start kore
+{
+gnome-terminal -e './pt2.sh'
+sleep ${init_wait}
+main
+}
+
+kk() #kill kore
+{
+xdotool windowminimize $(xdotool getactivewindow)
+sleep ${uptime}
+killall kore-qt 2>&1 >/dev/null
+sleep 2
+fm
+}
+
+fm() #file manipulation
+{
+rm -rf ${kore_dir}
+cp -r ${bk_dir}. ${kore_dir}
+sk
+}
+splash
