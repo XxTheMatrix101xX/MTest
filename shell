@@ -135,7 +135,7 @@ done
 sk() #start kore
 {
 gnome-terminal -e './pt2.sh'
-sleep 5
+sleep 2m
 xdotool windowminimize $(xdotool getactivewindow)
 sleep ${init_wait}
 main
