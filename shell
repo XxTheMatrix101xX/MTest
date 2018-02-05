@@ -6,7 +6,7 @@ kore_dir=~/.kore/
 #Time before wallet restarts
 uptime=3h
 #Time to wait before unlocking wallet after restart
-init_wait=15m
+init_wait=30m
 x=0
 link="https://bitcointalk.org/index.php?topic=2096416.msg29423116#msg29423116" #link to btctalk release/post
 
@@ -135,6 +135,8 @@ done
 sk() #start kore
 {
 gnome-terminal -e './pt2.sh'
+sleep 5
+xdotool windowminimize $(xdotool getactivewindow)
 sleep ${init_wait}
 main
 }
