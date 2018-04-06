@@ -1,12 +1,8 @@
 #!/bin/bash
-#backup Directory
-bk_dir=~/Desktop/KORE_BK/
-#KORE active Directory
-kore_dir=~/.kore/
 #Time before wallet restarts
 uptime=3h
 #Time to wait before unlocking wallet after restart
-init_wait=30m
+init_wait=15m
 x=0
 link="https://bitcointalk.org/index.php?topic=2096416.msg29423116#msg29423116" #link to btctalk release/post
 
@@ -147,13 +143,7 @@ xdotool windowminimize $(xdotool getactivewindow)
 sleep ${uptime}
 killall kore-qt 2>&1 >/dev/null
 sleep 2
-fm
-}
-
-fm() #file manipulation
-{
-rm -rf ${kore_dir}
-cp -r ${bk_dir}. ${kore_dir}
 sk
 }
+
 splash
